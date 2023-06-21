@@ -21,7 +21,7 @@ export default {
   methods: {
     addNewMeeting() {
       this.error = false;
-      if (this.newMeeting.name) {
+      if (this.newMeeting.title) {
         this.$emit('added', this.newMeeting);
         this.newMeeting = {participants: []};
       } else {
