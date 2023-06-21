@@ -14,10 +14,10 @@
 <script>
 import NewMeetingForm from "./NewMeetingForm";
 import MeetingsList from "./MeetingsList";
-
+import axios from "axios";
 export default {
   components: {NewMeetingForm, MeetingsList},
-  props: {username: String},
+  props: {username: String, meetings: Array},
   data() {
     return {
       meetings: []
@@ -25,17 +25,48 @@ export default {
   },
   methods: {
     addNewMeeting(meeting) {
-      this.meetings.push(meeting);
+      axios.post('/api/meetings', meeting)
+          .then(response => {
+            this.message = ("Spotkanie utworzone.")
+            this.meetings.push({
+              id: response.data.id,
+              ...meeting
+            })
+          })
+          .catch(response => {
+            this.message = ("Nie utworzono spotkania.")
+          });
     },
     addMeetingParticipant(meeting) {
-      meeting.participants.push(this.username);
+      axios.post("/api/meetings/" + meeting.id + "/participants", {login: this.username})
+          .then(response => {
+            this.message = ("Pomyślnie dodano uczestnika spotkania.")
+            meeting.participants.push({login: this.username});
+          })
+          .catch(response => {
+            this.message = ("Uczestnik spotkania nie został dodany.")
+          });
     },
     removeMeetingParticipant(meeting) {
-      meeting.participants.splice(meeting.participants.indexOf(this.username), 1);
+      axios.delete("/api/meetings/" + meeting.id + "/participants/" + this.username)
+          .then(response => {
+            this.message = ("Uczestnik spotkania został usunięty.")
+            meeting.participants.splice(meeting.participants.findIndex(p => p.login === this.username), 1);
+          })
+          .catch(response => {
+            this.message = ("Uczestnik spotkania nie został usunięty.")
+         });
     },
     deleteMeeting(meeting) {
-      this.meetings.splice(this.meetings.indexOf(meeting), 1);
-    },
+      axios.delete('/api/meetings/' + meeting.id)
+          .then(response => {
+            this.message = ("Spotkanie zostało usunięte.")
+            this.meetings.splice(this.meetings.indexOf(meeting), 1);
+          })
+          .catch(response => {
+            this.message = ("Spotkanie nie zostało usunięte.")
+          });
+      },
   }
 }
 </script>

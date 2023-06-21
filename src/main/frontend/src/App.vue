@@ -35,7 +35,7 @@ export default {
       created: false,
       signingUp: false,
       authenticatedUsername: '',
-
+      meetings: [],
     }
   },
   methods: {
@@ -46,11 +46,20 @@ export default {
             const token = response.data.token;
             axios.defaults.headers.common["Authorization"] = 'Bearer ' + token;
             axios.get('/api/meetings')
-                .then(response => console.log(response.data))
+                .then(response => {
+                  this.meetings = response.data;
+          })
+                .catch(response => {
+                  this.created = true;
+                  this.message = ("Nie pobrano listy spotkań")
+                })
+            this.created = false;
+            this.message = ("Logowanie udane.")
           })
           .catch(response => {
-            this.message = 'Logowanie nieudane'
-          });
+            this.created = true;
+            this.message = ("Logowanie nieudane.")
+          })
     },
     logMeOut() {
       this.authenticatedUsername = '';
